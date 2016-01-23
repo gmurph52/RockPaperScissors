@@ -2,26 +2,31 @@
 using System;
 
 /**
-*
+* This class represents a rock, paper, scissers game. The game is intended to be played between 
+* a human and a robotic hand. The human hand is reconized using a Leap Motion camera. The robotic 
+* arm and hand are controlled by......
 */
 class RockPaperScissors
 {
     /**
-     * 
+     * This is the main method wher the game is started from. The game is in an infinate loop
+     * allowing the user to play as many rounds as he wants.
      */
     public static void Main()
     {
         RockPaperScissors game = new RockPaperScissors();
         while (true)
         {
-            Console.WriteLine("Press any key to start a game... ");
+            Console.WriteLine("Press enter to start a game... ");
             Console.ReadLine();
             game.playGame();
         }
     }
 
     /**
-     *
+     * This method is where the standard rock, paper, scissors logic takes place. Both the 
+     * user move and the robot move are compared and a winner is determined. The winner is 
+     * then displayed to the screen.
      */
     void playGame()
     {
@@ -71,6 +76,7 @@ class RockPaperScissors
             }
         }
 
+        // Displays the winner
         Console.WriteLine("The human did a " + userMove + "\nThe robot did a " + robotMove + "\n\n");
         if (winner.Equals("tie"))
         {
@@ -83,7 +89,8 @@ class RockPaperScissors
     }
 
     /**
-     *
+     * This method gets the users move. A listener is created for the Leap Motion camera. 
+     * The users move is obtained from the listener and is returned as the move for this round.
      */
     String getUserMove()
     {
@@ -108,7 +115,9 @@ class RockPaperScissors
     }
 
     /**
-     *
+     * This method is where the robot's move is determined. A random number from 1-3 is
+     * generated and used in a switch statement to choose either 'rock', 'paper', or 
+     * 'scissors'.
      */
     String getRobotMove()
     {
@@ -136,11 +145,21 @@ class RockPaperScissors
                 break;
 
         }
-                // send move to robotic hand (will probably need a nother function for this)
 
+        // Send move to robotic hand
+        moveRobotHand(move);
 
-                // Return move
-               return move;
+        // Return move
+        return move;
+    }
+
+    /**
+     * This method controlls the movement of the robot hand. The move which is
+     * to be made by the hand is passed in. 
+     */
+    void moveRobotHand(String move)
+    {
+        // code to move move robot hand to correct shape
     }
 }
 
@@ -170,66 +189,58 @@ class SampleListener : Listener
 
     public override void OnFrame(Controller controller)
     {
-        // Slows down the frames
-        count++;
+        Frame frame = controller.Frame();
+        Hand hand = frame.Hands.Rightmost;
 
+        //The rate of change of the palm position in millimeters/second.
+        Vector handSpeed = hand.PalmVelocity;
+        // Console.WriteLine("The hand speed is: " + handSpeed);
 
-        //  if (count > 50)
+        //if (handSpeed < )
+        //{
+
+        // Used to check for "rock"
+        float strength = hand.GrabStrength;
+
+        // USed to check for "scissors"
+        FingerList fingers = hand.Fingers.Extended();
+
+        // Used to check for "paper"
+        float pitch = hand.Direction.Pitch;
+        float yaw = hand.Direction.Yaw;
+        float roll = hand.PalmNormal.Roll;
+
+        // Check for "rock"
+        if (strength > .9) //  [0..1]. 0 open 1 fist
         {
-            Frame frame = controller.Frame();
-            Hand hand = frame.Hands.Rightmost;
-
-
-            //The rate of change of the palm position in millimeters/second.
-            Vector handSpeed = hand.PalmVelocity;
-            // Console.WriteLine("The hand speed is: " + handSpeed);
-
-            //if (handSpeed < )
-            //{
-
-            // Used to check for "rock"
-            float strength = hand.GrabStrength;
-
-            // USed to check for "scissors"
-            FingerList fingers = hand.Fingers.Extended();
-
-            // Used to check for "paper"
-            float pitch = hand.Direction.Pitch;
-            float yaw = hand.Direction.Yaw;
-            float roll = hand.PalmNormal.Roll;
-
-            // Check for "rock"
-            if (strength > .9) //  [0..1]. 0 open 1 fist
-            {
-                move = "rock";
-            }
-            // Check for scissors
-            else if (fingers.Count > 0 && fingers.Count < 4)
-            {
-                move = "scissors";
-            }
-            // Check for "paper"
-            else //if (pitch < .5 && yaw < .5 && roll < .5 /*&& !move.Equals("rock")*/)
-            {
-                move = "paper";
-            }
-           /* else
-            {
-                move = "invalid";
-            }*/
-
-
-               /* Console.WriteLine("Strength is: " + strength);
-                Console.WriteLine("pitch  = " + pitch);
-                Console.WriteLine("yaw  = " + yaw);
-                Console.WriteLine("roll  = " + roll);
-                Console.WriteLine("fingers  = " + fingers);*/
-
-            //  Console.WriteLine("\nmove = " + move + "\n");
-
-            //}
-            count = 0;
+            move = "rock";
         }
+        // Check for scissors
+        else if (fingers.Count > 0 && fingers.Count < 4)
+        {
+            move = "scissors";
+        }
+        // Check for "paper"
+        else //if (pitch < .5 && yaw < .5 && roll < .5 /*&& !move.Equals("rock")*/)
+        {
+            move = "paper";
+        }
+        /* else
+         {
+             move = "invalid";
+         }*/
+
+
+        /* Console.WriteLine("Strength is: " + strength);
+           Console.WriteLine("pitch  = " + pitch);
+           Console.WriteLine("yaw  = " + yaw);
+           Console.WriteLine("roll  = " + roll);
+           Console.WriteLine("fingers  = " + fingers);*/
+
+        //  Console.WriteLine("\nmove = " + move + "\n");
+
+        //}
+        count = 0;
     }
 }
 
