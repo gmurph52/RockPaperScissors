@@ -1,6 +1,12 @@
 ﻿using Leap;
 using System;
 
+public static class MyStaticValues
+{
+    public static int count = 0; 
+}
+
+
 /**
 * This class represents a rock, paper, scissers game. The game is intended to be played between 
 * a human and a robotic hand. The human hand is reconized using a Leap Motion camera. The robotic 
@@ -8,6 +14,7 @@ using System;
 */
 class RockPaperScissors
 {
+
     /**
      * This is the main method wher the game is started from. The game is in an infinate loop
      * allowing the user to play as many rounds as he wants.
@@ -94,17 +101,29 @@ class RockPaperScissors
      */
     String getUserMove()
     {
+        bool ready = false;
         SampleListener listener = new SampleListener();
         Controller controller = new Controller();
         controller.AddListener(listener);
 
         //  ******************************************************** THIS NEEDS DONE *************************************      
         // Keep this process running until enter is pressed
-        // we want to keep this to keep running until the move is made
-        Console.WriteLine("Press enter to get your move...");
-        Console.ReadLine();
+        // we want to change this to keep running until the move is made.....
+        //Console.WriteLine("Press enter to get your move...");
+        //Console.ReadLine();
         //  **************************************************************************************************************      
+        
+    
 
+        while(!ready)
+        {
+            // Wait until ready to get move
+            if (MyStaticValues.count > 3)
+            {
+                ready = true;
+                MyStaticValues.count = 0;
+            }
+        }
 
        // Console.WriteLine("move = " + listener.move);
 
@@ -143,7 +162,6 @@ class RockPaperScissors
             default:
                 move = "rock";
                 break;
-
         }
 
         // Send move to robotic hand
@@ -159,18 +177,24 @@ class RockPaperScissors
      */
     void moveRobotHand(String move)
     {
-        // code to move move robot hand to correct shape
+        // Add code to move move robot hand to correct shape
     }
 }
 
 /**
-*
+* This listener captures frames from the Leap Motion camera. Once a listener
+* is created it continually gets frames from the camera until the listener is
+* removed.
 */
 class SampleListener : Listener
 {
-    // used to slow down frames
-    int count = 0;
+    //int count = 0;
     public String move = "";
+
+    bool goingDown = false;
+    bool wentDown = false;
+    bool goingUp = false;
+    
 
     private Object thisLock = new Object();
 
@@ -182,22 +206,58 @@ class SampleListener : Listener
         }
     }
 
+    /**
+     * This method executes when the listener first connects to the camera.
+     */
     public override void OnConnect(Controller controller)
     {
         // SafeWriteLine("Connected");
     }
 
+
+    /**
+     * This method is called each time a frame is captured. 
+     */
     public override void OnFrame(Controller controller)
     {
         Frame frame = controller.Frame();
         Hand hand = frame.Hands.Rightmost;
 
+        //*********************** TRYING TO FIGURE OUT WHEN TO GET MOVE FROM USER  ********************
+
         //The rate of change of the palm position in millimeters/second.
         Vector handSpeed = hand.PalmVelocity;
-        // Console.WriteLine("The hand speed is: " + handSpeed);
+         //Console.WriteLine("The hand speed is: " + handSpeed);
 
-        //if (handSpeed < )
-        //{
+        Vector upVector = Vector.Up;
+        float y = handSpeed.y;
+       // Console.WriteLine("y: " + y);
+        if (y < -10 || goingDown)
+        {
+            goingDown = true;
+
+            if (y > 10 || wentDown)
+            {
+                wentDown = true;
+                //goingUp = true;
+                if (y < -10 && wentDown)
+                {
+                    MyStaticValues.count += 1;
+                   // count++;
+                   // Console.WriteLine("count: " + count);
+                    wentDown = false;
+                    goingDown = false;
+                }
+            }
+        }
+
+
+        //if (count > 3 )
+      //  {
+           // count = 0;
+        //*********************************************************************************************
+
+
 
         // Used to check for "rock"
         float strength = hand.GrabStrength;
@@ -240,7 +300,6 @@ class SampleListener : Listener
         //  Console.WriteLine("\nmove = " + move + "\n");
 
         //}
-        count = 0;
     }
 }
 
