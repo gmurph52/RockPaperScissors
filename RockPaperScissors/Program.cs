@@ -1,6 +1,12 @@
 ﻿using Leap;
 using System;
+using System.IO.Ports;
+using System.Collections;
 
+
+/**
+ * This is where all "global variables" can be declared. 
+ */
 public static class MyStaticValues
 {
     public static int count = 0; 
@@ -105,21 +111,14 @@ class RockPaperScissors
         SampleListener listener = new SampleListener();
         Controller controller = new Controller();
         controller.AddListener(listener);
-
-        //  ******************************************************** THIS NEEDS DONE *************************************      
-        // Keep this process running until enter is pressed
-        // we want to change this to keep running until the move is made.....
-        //Console.WriteLine("Press enter to get your move...");
-        //Console.ReadLine();
-        //  **************************************************************************************************************      
-        
     
-
+        // Keep this process running until user makes thier move
         while(!ready)
         {
             // Wait until ready to get move
             if (MyStaticValues.count > 3)
             {
+                System.Threading.Thread.Sleep(1000);
                 ready = true;
                 MyStaticValues.count = 0;
             }
@@ -141,6 +140,7 @@ class RockPaperScissors
     String getRobotMove()
     {
         String move;
+        String cMove;
 
         // Get random number 1-3    
         Random rnd = new Random();
@@ -152,20 +152,24 @@ class RockPaperScissors
         {
             case 1:
                 move = "rock";
+                cMove = "r";
                 break;
             case 2:
                 move = "paper";
+                cMove = "p";
                 break;
             case 3:
                 move = "scissors";
+                cMove = "s";
                 break;
             default:
                 move = "rock";
+                cMove = "r";
                 break;
         }
 
         // Send move to robotic hand
-        moveRobotHand(move);
+        moveRobotHand(cMove);
 
         // Return move
         return move;
@@ -178,6 +182,10 @@ class RockPaperScissors
     void moveRobotHand(String move)
     {
         // Add code to move move robot hand to correct shape
+        SerialPort serial = new SerialPort("COM4", 9600);
+        serial.Open();
+        serial.Write(move);
+        serial.Close();
     }
 }
 
@@ -188,11 +196,10 @@ class RockPaperScissors
 */
 class SampleListener : Listener
 {
-    //int count = 0;
     public String move = "";
 
     bool goingDown = false;
-    bool wentDown = false;
+    //bool wentDown = false;
     bool goingUp = false;
     
 
@@ -223,42 +230,38 @@ class SampleListener : Listener
         Frame frame = controller.Frame();
         Hand hand = frame.Hands.Rightmost;
 
-        //*********************** TRYING TO FIGURE OUT WHEN TO GET MOVE FROM USER  ********************
-
         //The rate of change of the palm position in millimeters/second.
         Vector handSpeed = hand.PalmVelocity;
-         //Console.WriteLine("The hand speed is: " + handSpeed);
 
-        Vector upVector = Vector.Up;
+        // The speed the hand is moving in the y (up and down) direction
+        // If y is negative, the hand is moving down
+        // If y is positive, the hand is moving up
         float y = handSpeed.y;
-       // Console.WriteLine("y: " + y);
-        if (y < -10 || goingDown)
+
+        // Console.WriteLine("The hand speed is: " + handSpeed);
+        // Console.WriteLine("y: " + y);
+
+        /****************** DETERMINES WHEN TO GET THE USERS MOVE ********************/ 
+        // Keeps track of how many times the user moves their hand up and down 
+        // The users move should be taken on the fourth downward hand movement (rock, paper, scissors, shoot)
+        if (y < -10 || goingDown) // moving down 
         {
             goingDown = true;
 
-            if (y > 10 || wentDown)
+            if (y > 10 || goingUp)
             {
-                wentDown = true;
-                //goingUp = true;
-                if (y < -10 && wentDown)
+                goingUp = true;
+                if (y < -10 && goingUp)
                 {
                     MyStaticValues.count += 1;
-                   // count++;
-                   // Console.WriteLine("count: " + count);
-                    wentDown = false;
+                    // Console.WriteLine("count: " + MyStaticValues.count);
+                    goingUp = false;
                     goingDown = false;
                 }
             }
         }
-
-
-        //if (count > 3 )
-      //  {
-           // count = 0;
-        //*********************************************************************************************
-
-
-
+        
+        /************* DETERMINES THE USERS MOVE BASED OFF OF HAND SHAPE *************/
         // Used to check for "rock"
         float strength = hand.GrabStrength;
 
@@ -298,8 +301,6 @@ class SampleListener : Listener
            Console.WriteLine("fingers  = " + fingers);*/
 
         //  Console.WriteLine("\nmove = " + move + "\n");
-
-        //}
     }
 }
 
