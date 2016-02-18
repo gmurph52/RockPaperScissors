@@ -16,7 +16,8 @@ public static class MyStaticValues
 /**
 * This class represents a rock, paper, scissers game. The game is intended to be played between 
 * a human and a robotic hand. The human hand is reconized using a Leap Motion camera. The robotic 
-* arm and hand are controlled by......
+* arm and hand are controlled by an arduino Uno and the char that is sent to it throught the 
+* moveRobotHand function.
 */
 class RockPaperScissors
 {
@@ -182,10 +183,10 @@ class RockPaperScissors
     void moveRobotHand(String move)
     {
         // Add code to move move robot hand to correct shape
-        SerialPort serial = new SerialPort("COM4", 9600);
+     /*  SerialPort serial = new SerialPort("COM4", 9600);
         serial.Open();
         serial.Write(move);
-        serial.Close();
+        serial.Close();*/
     }
 }
 
@@ -304,3 +305,31 @@ class SampleListener : Listener
     }
 }
 
+
+/*  public Texture btnTexture;
+    void OnGUI()
+    {
+
+        if (!btnTexture)
+        {
+            Debug.LogError("Please assign a texture on the inspector");
+            return;
+        }
+        if (GUI.Button(new Rect(10, 10, 50, 50), btnTexture))
+            Debug.Log("Clicked the button with an image");
+
+        if (GUI.Button(new Rect(10, 70, 100, 100), "Start"))
+        {
+           
+
+
+
+            theGame();
+        }
+    }
+
+    void theGame()
+    {
+        Debug.Log("Clicked the button with text");
+
+    }*/
